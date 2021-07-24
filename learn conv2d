@@ -1,0 +1,27 @@
+import torch
+import torch.nn as nn
+import cv2
+import numpy as np
+
+torch.set_default_tensor_type(torch.FloatTensor)
+src_gray = cv2.imread("C:\\Users\\Administrator\\Desktop\\72400462_763374570786430_6033087436240715776_n.jpg", 0)
+cv2.namedWindow("src_gray_img", cv2.WINDOW_NORMAL)
+src_gray = cv2.medianBlur(src_gray, 5)
+src_gray = cv2.GaussianBlur(src_gray, (3, 3), sigmaX=0)
+cv2.imshow("src_gray_img", src_gray)
+print("shape:", src_gray.shape)
+imh, imw = src_gray.shape
+src_gray_t = torch.from_numpy(src_gray).reshape(1, 1, imh, imw)
+ker_size = 3
+ker = torch.ones(ker_size, ker_size, dtype=torch.float32) * -1
+ker[1, 1] = 8.1
+# ker = ker.reshape(1, 1, ker_size, ker_size)
+conv2d = nn.Conv2d(1, 2, (ker_size, ker_size), bias=False)
+conv2d.weight.detach()[0] = ker
+print(conv2d.weight.detach())
+dst_img_t = conv2d(src_gray_t.float())
+dst_img = dst_img_t[0, 0].detach().numpy()
+# dst_img = cv2.medianBlur(dst_img, 5)
+cv2.namedWindow("dst", cv2.WINDOW_KEEPRATIO)
+cv2.imshow("dst", np.uint8(dst_img))
+cv2.waitKey()
